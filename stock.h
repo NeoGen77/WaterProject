@@ -13,10 +13,20 @@ typedef struct {
     float prix;
 } Produit;
 
+typedef struct {
+    int idVente;
+    int idProduit;
+    int quantiteVendue;
+    float montantTotal;
+    char date[20]; // Format JJ/MM/AAAA
+} Vente;
+
 // Prototypes des fonctions
 void ajouterProduit(const char* nomFichier);
 void afficherStock(const char* nomFichier);
 void vendreProduit(const char* nomFichier);
 void verifierAlerte(const char* nomFichier, int seuil);
-
+void modifierProduit(const char* nomFichier);
+void enregistrerHistorique(Vente v);
+void afficherHistorique();
 #endif

@@ -15,6 +15,30 @@ void ajouterProduit(const char* nomFichier) {
     fclose(file);
     printf("\nProduit ajoute avec succes !\n");
 }
+void modifierProduit(const char* nomFichier) {
+    FILE *file = fopen(nomFichier, "rb+");
+    if (!file) return;
+
+    int idCherche, trouve = 0;
+    Produit p;
+
+    printf("ID du produit a modifier : "); scanf("%d", &idCherche);
+
+    while (fread(&p, sizeof(Produit), 1, file)) {
+        if (p.id == idCherche) {
+            trouve = 1;
+            printf("Nouvelle marque (actuelle: %s) : ", p.marque); scanf("%s", p.marque);
+            printf("Nouveau prix (actuel: %.2f) : ", p.prix); scanf("%f", &p.prix);
+            
+            fseek(file, -sizeof(Produit), SEEK_CUR);
+            fwrite(&p, sizeof(Produit), 1, file);
+            printf("Modification enregistree !\n");
+            break;
+        }
+    }
+    if (!trouve) printf("Produit introuvable.\n");
+    fclose(file);
+}
 
 void afficherStock(const char* nomFichier) {
     FILE *file = fopen(nomFichier, "rb");
@@ -61,5 +85,30 @@ void vendreProduit(const char* nomFichier) {
         }
     }
     if (!trouve) printf("Produit non trouve.\n");
+    fclose(file);
+}
+
+void enregistrerHistorique(Vente v) {
+    FILE *file = fopen("historique.dat", "ab");
+    if (file) {
+        fwrite(&v, sizeof(Vente), 1, file);
+        fclose(file);
+    }
+}
+
+void afficherHistorique() {
+    FILE *file = fopen("historique.dat", "rb");
+    if (!file) {
+        printf("Aucun historique disponible.\n");
+        return;
+    }
+
+    Vente v;
+    printf("\n--- HISTORIQUE DES VENTES ---\n");
+    printf("ID Vente | ID Prod | Qte | Total | Date\n");
+    while (fread(&v, sizeof(Vente), 1, file)) {
+        printf("%-8d | %-7d | %-3d | %-5.2f | %s\n", 
+                v.idVente, v.idProduit, v.quantiteVendue, v.montantTotal, v.date);
+    }
     fclose(file);
 }
