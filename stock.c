@@ -30,8 +30,7 @@ void modifierProduit(const char* nomFichier) {
             printf("Nouvelle marque (actuelle: %s) : ", p.marque); scanf("%s", p.marque);
             printf("Nouveau prix (actuel: %.2f) : ", p.prix); scanf("%f", &p.prix);
             
-            fseek(file, -sizeof(Produit), SEEK_CUR);
-            fwrite(&p, sizeof(Produit), 1, file);
+            fseek(file, -(long)sizeof(Produit), SEEK_CUR);            fwrite(&p, sizeof(Produit), 1, file);
             printf("Modification enregistree !\n");
             break;
         }
