@@ -1,4 +1,5 @@
 #include "stock.h"
+#include <time.h>
 
 void ajouterProduit(const char* nomFichier) {
     FILE *file = fopen(nomFichier, "ab");
@@ -74,12 +75,34 @@ void vendreProduit(const char* nomFichier) {
             trouve = 1;
             if (p.quantite >= qteVendre) {
                 p.quantite -= qteVendre;
-                // On remonte le curseur pour ecraser l'ancienne valeur
+                
+                // 1. Mise à jour du stock physique
                 fseek(file, -(long)sizeof(Produit), SEEK_CUR);
                 fwrite(&p, sizeof(Produit), 1, file);
-                printf("Vente enregistree. Nouveau stock : %d\n", p.quantite);
+
+                // 2. Préparation de la transaction pour l'historique
+                Vente v;
+                v.idVente = (int)time(NULL); // Génère un ID unique basé sur l'heure
+                v.idProduit = p.id;
+                v.quantiteVendue = qteVendre;
+                v.montantTotal = qteVendre * p.prix;
+
+                // Récupération de la date actuelle
+                time_t t = time(NULL);
+                struct tm tm = *localtime(&t);
+
+                sprintf(v.date, "%02d/%02d/%04d", 
+                                        tm.tm_mday, 
+                                        tm.tm_mon + 1, 
+                                        tm.tm_year + 1900);                // Note : 2026 est l'année actuelle
+
+                // 3. Enregistrement effectif
+                enregistrerHistorique(v);
+
+                printf("\nVente reussie !\n");
+                printf("Montant total : %.2f\n", v.montantTotal);
             } else {
-                printf("Erreur : Stock insuffisant (%d restant)\n", p.quantite);
+                printf("Erreur : Stock insuffisant.\n");
             }
             break;
         }
@@ -89,7 +112,7 @@ void vendreProduit(const char* nomFichier) {
 }
 
 void enregistrerHistorique(Vente v) {
-    FILE *file = fopen("historique.dat", "ab");
+    FILE *file = fopen("historique.dat", "ab"); // "ab" pour ajouter à la fin
     if (file) {
         fwrite(&v, sizeof(Vente), 1, file);
         fclose(file);
